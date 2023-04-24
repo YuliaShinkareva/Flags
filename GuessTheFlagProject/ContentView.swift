@@ -7,13 +7,15 @@
 import SwiftUI
 
 struct ContentView: View {
-    
+
     @State private var showingScore = false
     @State private var gameEnd = false
     
     @State private var scoreTitle = ""
     @State private var score = 0
     @State private var questions = 1
+    
+    @State private var selectedFlag = -1
     
     @State private var countries = allCountries.shuffled()
     static let allCountries = ["Estonia", "France", "Germany", "Ireland", "Italy", "Nigeria", "Poland", "Russia", "Spain", "UK", "US"]
@@ -23,9 +25,9 @@ struct ContentView: View {
     var body: some View {
         ZStack {
             RadialGradient(stops:[
-                .init(color: Color(red: 0.1, green: 0.2, blue: 0.45), location: 0.3),
-                .init(color: Color(red: 0.76, green: 0.15, blue: 0.26), location: 0.3)
-            ], center: .top, startRadius: 200, endRadius: 700)
+                .init(color: Color(red: 0.5, green: 0.1, blue: 0.45), location: 0.3),
+                .init(color: Color(red: 0.73, green: 0.5, blue: 0.76), location: 0.3)
+            ], center: .top, startRadius: 550, endRadius: 900)
             .ignoresSafeArea()
             
             VStack {
@@ -35,7 +37,6 @@ struct ContentView: View {
                     .font(.largeTitle.bold())
                     .foregroundColor(.white)
                   
-                
                 VStack(spacing: 15){
                     VStack {
                         Text("Tap the flag of")
@@ -47,9 +48,13 @@ struct ContentView: View {
                     ForEach(0..<3) { number in
                         Button {
                             //to be tapped
-                            flagTapped(number)
-                        } label: {
+                                flagTapped(number)
+                            } label: {
             FlagImage(name: countries[number])
+                .rotation3DEffect(.degrees(selectedFlag == number ? 360 : 0), axis: (x: 0, y: 1, z: 0))
+                .opacity(selectedFlag == -1 || selectedFlag == number ? 1 : 0.25 )
+                .saturation(selectedFlag == -1 || selectedFlag == number ? 1 : 0.6)
+                .animation(.default, value: selectedFlag)
                         }
                     }
                 }
@@ -86,12 +91,14 @@ struct ContentView: View {
         }
         
         func flagTapped(_ number: Int) {
+            selectedFlag = number
+            
             if number == correctAnswer {
                 scoreTitle = "Correct"
                 score += 1
             } else {
                 let needsThe = ["UK", "US"]
-              let theirAnswer = countries[number]
+                let theirAnswer = countries[number]
                 if needsThe.contains(theirAnswer) {
                     scoreTitle = "Wrong! That's the flag of the \(theirAnswer)."
                 } else {
@@ -114,6 +121,7 @@ struct ContentView: View {
             countries.shuffle()
             correctAnswer = Int.random(in: 0...2)
             questions += 1
+            selectedFlag = -1
         }
     
     func resume() {
